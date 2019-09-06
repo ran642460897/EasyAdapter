@@ -15,12 +15,20 @@ import java.util.List;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
+/**
+ * @author  Jason Ran
+ * @date 2019/9/6
+ */
+
+public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
     private List<E> listData=new ArrayList<>();
-    private int footerItemType=ITEM_TYPE_FOOT_END;
+    private int footerItemType=ITEM_TYPE_FOOT_DEFAULT;
     private Context context;
-    private boolean showFooter=true;//是否展示页脚
+
+    private boolean showFooter=true;
+
     private SparseArray<OnRecyclerViewClickListener> clickListeners;
     private OnRecyclerViewClickListener onTopReloadListener,onBottomReloadListener;
 
@@ -28,16 +36,22 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
 
     private int layoutResId;
 
+
+    private SwipeRefreshLayout refreshLayout;
     private AdapterSetting setting;
 
-    private static final int STATE_DEFAULT=0;//初始状态
-    private static final int STATE_WAIT_FOR_LOADING=1;//等待加载状态
-    private static final int STATE_LOADING=2;//加载中状态
-    private static final int STATE_LOADING_FAILED=3;//加载失败状态
-    private static final int STATE_END=4;//完结状态
+    //1 初始状态 2 等待加载状态 3 加载失败状态 4 完结状态
+
+    private static final int STATE_DEFAULT=0;
+    private static final int STATE_WAIT_FOR_LOADING=1;
+    private static final int STATE_LOADING=2;
+    private static final int STATE_LOADING_FAILED=3;
+    private static final int STATE_END=4;
 
 
     private static final int ITEM_TYPE_LIST=20;
+
+    private static final int ITEM_TYPE_FOOT_DEFAULT=29;
     private static final int ITEM_TYPE_FOOT_END=30;
     private static final int ITEM_TYPE_FOOT_LOADING_BOTTOM=31;
     private static final int ITEM_TYPE_FOOT_LOADING_TOP=32;
@@ -47,33 +61,27 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
 
 
 
-    public EasyAdapter(Context context,int layoutResId,AdapterSetting setting){
+
+    public BaseEasyAdapter(Context context,int layoutResId,AdapterSetting setting){
         this.context=context;
         this.layoutResId=layoutResId;
         this.setting=setting;
         clickListeners=new SparseArray<>();
     }
-    public EasyAdapter(Context context,int layoutResId){
+    public BaseEasyAdapter(Context context,int layoutResId){
         this(context,layoutResId,new AdapterSetting());
     }
 
     /**
      * 更新数据
      * @param data 数据源
-     * @param clear 是否清空以前列表数据
-     * @param end 是否结束更多加载
      */
-    public void updateData(List<E> data,boolean clear,boolean end){
-        if(clear) listData.clear();
-        if(data!=null) listData.addAll(data);
-        notifyDataSetChanged();
-        setCurrentState(end?STATE_END:STATE_WAIT_FOR_LOADING);
-    }
-    public void updateData(List<E> data,boolean clear){
-        updateData(data,clear,true);
-    }
     public void updateData(List<E> data){
-        updateData(data,true,true);
+        listData.clear();
+        if(data!=null) {
+            listData.addAll(data);
+        }
+        notifyDataSetChanged();
     }
     public void updateData(E item,int position){
         if(position<listData.size()&&position>-1&&item!=null){
@@ -83,11 +91,20 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
     }
     public void addData(E item,int position){
         if(position<=listData.size()&&position>-1&&item!=null){
-            if(listData.size()==0) setFooterItemType(ITEM_TYPE_FOOT_END);
+            if(listData.size()==0) {
+                setFooterItemType(ITEM_TYPE_FOOT_END);
+            }
             listData.add(position,item);
             notifyItemInserted(position);
         }
     }
+    public void addData(List<E> data){
+        if(data!=null){
+            listData.addAll(data);
+            notifyDataSetChanged();
+        }
+    }
+
     //    public void addData(E item){
 //        if(item!=null){
 //            if(listData.size()==0) setFooterItemType(ITEM_TYPE_FOOT_END);
@@ -95,6 +112,7 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
 //            notifyItemInserted(listData.size()-1);
 //        }
 //    }
+
     public E getItem(int position){
         return listData.get(position);
     }
@@ -102,7 +120,9 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
         if(position<listData.size()&&position>-1) {
             listData.remove(position);
             notifyItemRemoved(position);
-            if(listData.size()==0) setFooterItemType(ITEM_TYPE_FOOT_EMPTY);
+            if(listData.size()==0) {
+                setFooterItemType(ITEM_TYPE_FOOT_EMPTY);
+            }
         }
     }
 
@@ -111,10 +131,10 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
      * @param type 页脚类型
      */
     private void setFooterItemType(int type){
-        if(!showFooter) return;
-
-        this.footerItemType=type;
-        notifyItemChanged(listData.size());
+        if(showFooter) {
+            this.footerItemType = type;
+            notifyItemChanged(listData.size());
+        }
     }
 
     /**
@@ -133,6 +153,8 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
             case STATE_END:
                 setFooterItemType(listData.size()==0?ITEM_TYPE_FOOT_EMPTY:ITEM_TYPE_FOOT_END);
                 break;
+                default:
+                    break;
         }
     }
 
@@ -141,6 +163,26 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
      */
     public void notifyLoadingFailed(){
         setCurrentState(STATE_LOADING_FAILED);
+        stopRefreshing();
+    }
+    public void notifyLoadingSucceeded(List<E> data){
+        notifyLoadingSucceeded(data,true,true);
+    }
+
+    /**
+     * 加载完成
+     * data 数据源
+     * clear 是否清空
+     * end 是否结束
+     */
+    public void notifyLoadingSucceeded(List<E> data,boolean clear,boolean end){
+        if(clear){
+            updateData(data);
+        }else{
+            addData(data);
+        }
+        setCurrentState(end?STATE_END:STATE_WAIT_FOR_LOADING);
+        stopRefreshing();
     }
 
     /**
@@ -150,14 +192,30 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
         setCurrentState(STATE_LOADING);
     }
 
+
     public boolean isWaitingForLoading(){
         return this.currentState==STATE_WAIT_FOR_LOADING;
     }
 
+    private void stopRefreshing(){
+        if(refreshLayout!=null&&refreshLayout.isRefreshing()){
+            refreshLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    refreshLayout.setRefreshing(false);
+                }
+            });
+        }
+    }
+
     @Override
     public int getItemCount() {
-        if(showFooter) return listData.size() + 1;
-        else return listData.size();
+        if(showFooter) {
+            return listData.size() + 1;
+        }
+        else {
+            return listData.size();
+        }
     }
 
     @Override
@@ -189,14 +247,18 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
                     return new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_footer_empty, parent, false));
                 case ITEM_TYPE_FOOT_NET_ERROR_TOP:
                     EasyHolder topErrorHolder=new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_footer_net_error_top, parent, false));
-                    if(onTopReloadListener!=null) topErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onTopReloadListener);
+                    if(onTopReloadListener!=null) {
+                        topErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onTopReloadListener);
+                    }
                     return topErrorHolder;
                 case ITEM_TYPE_FOOT_NET_ERROR_BOTTOM:
                     EasyHolder bottomErrorHolder=new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_footer_net_error_bottom, parent, false));
-                    if(onBottomReloadListener!=null) bottomErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onBottomReloadListener);
+                    if(onBottomReloadListener!=null) {
+                        bottomErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onBottomReloadListener);
+                    }
                     return bottomErrorHolder;
                 default:
-                    return null;
+                    return new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(setting.getDefaultLayoutResId(), parent, false));
             }
         }
     }
@@ -215,12 +277,20 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
             case ITEM_TYPE_LIST:
                 onBind(holder,position);
                 break;
+                default:
+                    break;
         }
     }
-    public EasyAdapter<E> addOnRecyclerViewClickListener(@IdRes int viewId, OnRecyclerViewClickListener listener){
+    public BaseEasyAdapter<E> addOnRecyclerViewClickListener(@IdRes int viewId, OnRecyclerViewClickListener listener){
         clickListeners.put(viewId,listener);
         return this;
     }
+
+    /**
+     * 绑定holder
+     * @param holder holder
+     * @param position position
+     */
     public abstract void onBind(@NonNull EasyHolder holder, int position);
 
     public Context getContext() {
@@ -237,5 +307,9 @@ public abstract class EasyAdapter<E> extends RecyclerView.Adapter<EasyHolder> {
 
     public void setOnBottomReloadListener(OnRecyclerViewClickListener onBottomReloadListener) {
         this.onBottomReloadListener = onBottomReloadListener;
+    }
+
+    public void setRefreshLayout(SwipeRefreshLayout refreshLayout) {
+        this.refreshLayout = refreshLayout;
     }
 }

@@ -1,20 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/refresh">
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hello World!"
-        android:id="@+id/list" />
-    <Button
-        android:id="@+id/main_test"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="test"
-        android:layout_gravity="bottom"/>
-</FrameLayout>
+        android:id="@+id/list"
+        />
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="vertical"-->
+<!--        android:layout_gravity="bottom">-->
+<!--        <Button-->
+<!--            android:id="@+id/main_empty"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="test"-->
+<!--            android:layout_gravity="bottom"/>-->
+<!--        <Button-->
+<!--            android:id="@+id/main_loading"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="test"-->
+<!--            android:layout_gravity="bottom"/>-->
+<!--    </LinearLayout>-->
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

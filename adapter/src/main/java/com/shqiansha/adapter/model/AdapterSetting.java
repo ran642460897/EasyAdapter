@@ -9,6 +9,7 @@ public class AdapterSetting {
     private int topLoadingLayoutResId;
     private int bottomLoadingLayoutResId;
     private int endLayoutResId;
+    private int defaultLayoutResId;
 
 
 
@@ -19,6 +20,7 @@ public class AdapterSetting {
         this.topLoadingLayoutResId = R.layout.item_footer_loading_top;
         this.bottomLoadingLayoutResId = R.layout.item_footer_loading_bottom;
         this.endLayoutResId=R.layout.item_footer_end;
+        this.defaultLayoutResId=R.layout.item_footer_default;
 
     }
 
@@ -68,5 +70,13 @@ public class AdapterSetting {
 
     public void setEndLayoutResId(int endLayoutResId) {
         this.endLayoutResId = endLayoutResId;
+    }
+
+    public int getDefaultLayoutResId() {
+        return defaultLayoutResId;
+    }
+
+    public void setDefaultLayoutResId(int defaultLayoutResId) {
+        this.defaultLayoutResId = defaultLayoutResId;
     }
 }

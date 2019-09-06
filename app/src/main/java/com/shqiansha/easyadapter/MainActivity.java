@@ -3,13 +3,15 @@ package com.shqiansha.easyadapter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.shqiansha.adapter.EasyAdapter;
+import com.shqiansha.adapter.BaseEasyAdapter;
 import com.shqiansha.adapter.EasyHolder;
 import com.shqiansha.adapter.helper.RecyclerViewHelper;
 import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
@@ -20,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private EasyAdapter<User> adapter;
+    private BaseEasyAdapter<User> adapter;
+    private int page=1,size=20;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,15 +31,22 @@ public class MainActivity extends AppCompatActivity {
         initView();
     }
     private void initView(){
-        findViewById(R.id.main_test).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                adapter.updateData(null);
-            }
-        });
+//        findViewById(R.id.main_empty).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                adapter.notifyLoadingSucceeded(null);
+//            }
+//        });
+//        findViewById(R.id.main_loading).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                adapter.notifyLoading();
+//            }
+//        });
+
 
         RecyclerView recyclerView=findViewById(R.id.list);
-        adapter=new EasyAdapter<User>(this,R.layout.item_test) {
+        adapter=new BaseEasyAdapter<User>(this,R.layout.item_test) {
             @Override
             public void onBind(@NonNull EasyHolder holder, int position) {
                 ((TextView)holder.getView(R.id.item_test_text)).setText(adapter.getItem(position).getName());
@@ -51,24 +61,30 @@ public class MainActivity extends AppCompatActivity {
         OnRecyclerViewRefreshListener listener=new OnRecyclerViewRefreshListener() {
             @Override
             public void onPullDown() {
-
+                page=1;
+                getData();
             }
 
             @Override
             public void onLoadMore() {
-
+                getData();
             }
         };
 
-        new RecyclerViewHelper(recyclerView,adapter,listener).init();
+        new RecyclerViewHelper(recyclerView,adapter,listener).bindRefreshLayout((SwipeRefreshLayout) findViewById(R.id.refresh)).init().firstRefresh(false);
 
-
-
-        List<User> users=new ArrayList<>();
-        users.add(new User("1","男"));
-        users.add(new User("2","男"));
-        users.add(new User("3","男"));
-
-        adapter.updateData(users);
+    }
+    private void getData(){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                List<User> users=new ArrayList<>();
+                for (int i=0;i<15;i++) {
+                    users.add(new User(i+"", "男"));
+                }
+                adapter.notifyLoadingSucceeded(users,page==1,page==3);
+                page++;
+            }
+        },5000);
     }
 }
