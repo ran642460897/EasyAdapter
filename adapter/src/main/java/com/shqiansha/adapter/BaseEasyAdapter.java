@@ -165,8 +165,8 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
         setCurrentState(STATE_LOADING_FAILED);
         stopRefreshing();
     }
-    public void notifyLoadingSucceeded(List<E> data){
-        notifyLoadingSucceeded(data,true,true);
+    public void notifyLoadingCompleted(List<E> data){
+        notifyLoadingCompleted(data,true,true);
     }
 
     /**
@@ -175,7 +175,7 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
      * clear 是否清空
      * end 是否结束
      */
-    public void notifyLoadingSucceeded(List<E> data,boolean clear,boolean end){
+    public void notifyLoadingCompleted(List<E> data,boolean clear,boolean end){
         if(clear){
             updateData(data);
         }else{

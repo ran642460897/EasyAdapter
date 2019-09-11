@@ -1,5 +1,6 @@
 package com.shqiansha.adapter.helper;
 
+import android.app.Notification;
 import android.view.View;
 
 import com.shqiansha.adapter.BaseEasyAdapter;
@@ -7,6 +8,7 @@ import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
 import com.shqiansha.adapter.listener.OnRecyclerViewRefreshListener;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -23,22 +25,47 @@ public class RecyclerViewHelper {
     private OnRecyclerViewRefreshListener refreshListener;
     private SwipeRefreshLayout refreshLayout;
     private RecyclerView.LayoutManager layoutManager;
+    private DividerItemDecoration itemDecoration;
+    private boolean hasFixedSize=true;
 
     public RecyclerViewHelper(RecyclerView recyclerView, BaseEasyAdapter easyAdapter, OnRecyclerViewRefreshListener listener) {
         this.recyclerView = recyclerView;
         this.easyAdapter = easyAdapter;
         this.refreshListener = listener;
-        this.layoutManager=new LinearLayoutManager(recyclerView.getContext());
     }
-    public RecyclerViewHelper bindRefreshLayout(SwipeRefreshLayout refreshLayout){
+    public RecyclerViewHelper setRefreshLayout(SwipeRefreshLayout refreshLayout){
         this.refreshLayout=refreshLayout;
         this.easyAdapter.setRefreshLayout(refreshLayout);
         return this;
     }
+
+    public void setLayoutManager(RecyclerView.LayoutManager layoutManager) {
+        this.layoutManager = layoutManager;
+    }
+
+    public void setHasFixedSize(boolean hasFixedSize) {
+        this.hasFixedSize = hasFixedSize;
+    }
+
+    public DividerItemDecoration getItemDecoration() {
+        return itemDecoration;
+    }
+
+    public void setItemDecoration(DividerItemDecoration itemDecoration) {
+        this.itemDecoration = itemDecoration;
+    }
+
     public  RecyclerViewHelper init(){
+        if(layoutManager==null){
+            layoutManager=new LinearLayoutManager(recyclerView.getContext());
+        }
+        if(itemDecoration!=null){
+            recyclerView.addItemDecoration(itemDecoration);
+        }
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(hasFixedSize);
         recyclerView.setAdapter(easyAdapter);
+
 
         if(refreshListener==null) {
             return this;
@@ -94,7 +121,7 @@ public class RecyclerViewHelper {
     }
 
     /**
-     *
+     * 首次刷新
      * @param anim 是否显示加载动画
      * @return
      */
@@ -117,5 +144,53 @@ public class RecyclerViewHelper {
 
         return this;
     }
+
+//    public static class Builder{
+//        private RecyclerView recyclerView;
+//        private BaseEasyAdapter easyAdapter;
+//        private OnRecyclerViewRefreshListener refreshListener;
+//        private RecyclerView.LayoutManager layoutManager;
+//        private DividerItemDecoration itemDecoration;
+//
+//        public RecyclerView getRecyclerView() {
+//            return recyclerView;
+//        }
+//
+//        public void setRecyclerView(RecyclerView recyclerView) {
+//            this.recyclerView = recyclerView;
+//        }
+//
+//        public BaseEasyAdapter getEasyAdapter() {
+//            return easyAdapter;
+//        }
+//
+//        public void setEasyAdapter(BaseEasyAdapter easyAdapter) {
+//            this.easyAdapter = easyAdapter;
+//        }
+//
+//        public OnRecyclerViewRefreshListener getRefreshListener() {
+//            return refreshListener;
+//        }
+//
+//        public void setRefreshListener(OnRecyclerViewRefreshListener refreshListener) {
+//            this.refreshListener = refreshListener;
+//        }
+//
+//        public RecyclerView.LayoutManager getLayoutManager() {
+//            return layoutManager;
+//        }
+//
+//        public void setLayoutManager(RecyclerView.LayoutManager layoutManager) {
+//            this.layoutManager = layoutManager;
+//        }
+//
+//        public void setItemDecoration(DividerItemDecoration itemDecoration) {
+//            this.itemDecoration = itemDecoration;
+//        }
+//
+//        private void build(){
+//
+//        }
+//    }
 
 }

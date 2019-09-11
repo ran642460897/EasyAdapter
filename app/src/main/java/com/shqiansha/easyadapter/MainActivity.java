@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         RecyclerView recyclerView=findViewById(R.id.list);
+        SwipeRefreshLayout refreshLayout=findViewById(R.id.refresh);
         adapter=new BaseEasyAdapter<User>(this,R.layout.item_test) {
             @Override
             public void onBind(@NonNull EasyHolder holder, int position) {
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        new RecyclerViewHelper(recyclerView,adapter,listener).bindRefreshLayout((SwipeRefreshLayout) findViewById(R.id.refresh)).init().firstRefresh(false);
+        new RecyclerViewHelper(recyclerView,adapter,listener).setRefreshLayout(refreshLayout).init().firstRefresh(false);
 
     }
     private void getData(){
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 for (int i=0;i<15;i++) {
                     users.add(new User(i+"", "男"));
                 }
-                adapter.notifyLoadingSucceeded(users,page==1,page==3);
+                adapter.notifyLoadingCompleted(users,page==1,page==3);
                 page++;
             }
         },5000);
