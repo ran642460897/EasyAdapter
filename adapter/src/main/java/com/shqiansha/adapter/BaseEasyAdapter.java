@@ -312,4 +312,8 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
     public void setRefreshLayout(SwipeRefreshLayout refreshLayout) {
         this.refreshLayout = refreshLayout;
     }
+
+    public void setShowFooter(boolean showFooter) {
+        this.showFooter = showFooter;
+    }
 }
