@@ -1,14 +1,9 @@
 package com.shqiansha.adapter.helper;
 
-import android.app.Notification;
-import android.view.View;
-
 import com.shqiansha.adapter.BaseEasyAdapter;
-import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
-import com.shqiansha.adapter.listener.OnRecyclerViewRefreshListener;
+import com.shqiansha.adapter.listener.OnRefreshListener;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -19,105 +14,45 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
  */
 
 public class RecyclerViewHelper {
-
-    private RecyclerView recyclerView;
-    private BaseEasyAdapter easyAdapter;
-    private OnRecyclerViewRefreshListener refreshListener;
-    private SwipeRefreshLayout refreshLayout;
-    private RecyclerView.LayoutManager layoutManager;
-    private DividerItemDecoration itemDecoration;
-    private boolean hasFixedSize=true;
-
-    public RecyclerViewHelper(RecyclerView recyclerView, BaseEasyAdapter easyAdapter, OnRecyclerViewRefreshListener listener) {
-        this.recyclerView = recyclerView;
-        this.easyAdapter = easyAdapter;
-        this.refreshListener = listener;
+    private Builder builder;
+    private RecyclerViewHelper(Builder builder) {
+        this.builder=builder;
+        init();
     }
-    public RecyclerViewHelper setRefreshLayout(SwipeRefreshLayout refreshLayout){
-        this.refreshLayout=refreshLayout;
-        this.easyAdapter.setRefreshLayout(refreshLayout);
-        return this;
-    }
+    private void init(){
+        if(builder==null||builder.recyclerView==null||builder.easyAdapter==null) return;
+        if(builder.layoutManager==null) builder.layoutManager=new LinearLayoutManager(builder.recyclerView.getContext());
+        builder.recyclerView.setLayoutManager(builder.layoutManager);
+        builder.recyclerView.setAdapter(builder.easyAdapter);
 
-    public void setLayoutManager(RecyclerView.LayoutManager layoutManager) {
-        this.layoutManager = layoutManager;
-    }
-
-    public void setHasFixedSize(boolean hasFixedSize) {
-        this.hasFixedSize = hasFixedSize;
-    }
-
-    public DividerItemDecoration getItemDecoration() {
-        return itemDecoration;
-    }
-
-    public void setItemDecoration(DividerItemDecoration itemDecoration) {
-        this.itemDecoration = itemDecoration;
-    }
-
-    public  RecyclerViewHelper init(){
-        if(layoutManager==null){
-            layoutManager=new LinearLayoutManager(recyclerView.getContext());
-        }
-        if(itemDecoration!=null){
-            recyclerView.addItemDecoration(itemDecoration);
-        }
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setHasFixedSize(hasFixedSize);
-        recyclerView.setAdapter(easyAdapter);
-
-
-        if(refreshListener==null) {
-            return this;
-        }
-
+        if(builder.refreshListener==null) return;
         //设置加载失败点击事件
-        easyAdapter.setOnTopReloadListener(new OnRecyclerViewClickListener() {
-            @Override
-            public void onClick(View v, int position) {
-                refreshListener.onPullDown();
-            }
-        });
-        easyAdapter.setOnBottomReloadListener(new OnRecyclerViewClickListener() {
-            @Override
-            public void onClick(View v, int position) {
-                refreshListener.onLoadMore();
-            }
-        });
+        builder.easyAdapter.setOnTopReloadListener((v,p)->builder.refreshListener.onPullDown());
+        builder.easyAdapter.setOnBottomReloadListener((v,p)-> builder.refreshListener.onLoadMore());
 
-        //设置refreshLayout监听
-        if(refreshLayout!=null){
-            refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        //滑动到底部，加载更多判断
+        if(builder.layoutManager instanceof LinearLayoutManager) {
+            builder.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
-                public void onRefresh() {
-                    refreshListener.onPullDown();
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (recyclerView.getAdapter() == null || recyclerView.getLayoutManager() == null || !(recyclerView.getLayoutManager() instanceof LinearLayoutManager))
+                        return;
+                    LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    BaseEasyAdapter adapter = (BaseEasyAdapter) recyclerView.getAdapter();
+
+                    if (adapter.isWaitingForLoading() && newState == RecyclerView.SCROLL_STATE_IDLE &&
+                            manager.findLastVisibleItemPosition() + 1 == adapter.getItemCount()) {
+                        adapter.notifyLoading();
+                        builder.refreshListener.onLoadMore();
+                    }
                 }
             });
         }
 
+        //设置refreshLayout监听
+        if(builder.refreshLayout!=null) builder.refreshLayout.setOnRefreshListener(()->builder.refreshListener.onPullDown());
 
-        //滑动到底部，加载更多判断
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                if(recyclerView.getAdapter()==null||recyclerView.getLayoutManager()==null||!(recyclerView.getLayoutManager() instanceof LinearLayoutManager)) {
-                    return;
-                }
-
-                LinearLayoutManager manager=(LinearLayoutManager) recyclerView.getLayoutManager();
-                BaseEasyAdapter adapter=(BaseEasyAdapter)recyclerView.getAdapter();
-
-                if (adapter.isWaitingForLoading() &&  newState == RecyclerView.SCROLL_STATE_IDLE &&
-                        manager.findLastVisibleItemPosition() + 1 == adapter.getItemCount()) {
-                    adapter.notifyLoading();
-                    refreshListener.onLoadMore();
-                }
-            }
-        });
-
-        return this;
     }
 
     /**
@@ -125,72 +60,73 @@ public class RecyclerViewHelper {
      * @param anim 是否显示加载动画
      * @return
      */
-    public RecyclerViewHelper firstRefresh(boolean anim){
-        if(anim&&refreshLayout!=null){
-            refreshLayout.post(new Runnable() {
-                @Override
-                public void run() {
-                    refreshLayout.setRefreshing(true);
-                    if(refreshListener!=null) {
-                        refreshListener.onPullDown();
-                    }
-                }
-            });
-        }else{
-            if(refreshListener!=null) {
-                refreshListener.onPullDown();
-            }
-        }
-
+    public RecyclerViewHelper firstRefresh(final boolean anim){
+        if(builder.refreshLayout==null) return this;
+        builder.refreshLayout.post(()->{
+            if(anim) builder.refreshLayout.setRefreshing(true);
+            if(builder.refreshListener!=null) builder.refreshListener.onPullDown();
+        });
         return this;
     }
 
-//    public static class Builder{
-//        private RecyclerView recyclerView;
-//        private BaseEasyAdapter easyAdapter;
-//        private OnRecyclerViewRefreshListener refreshListener;
-//        private RecyclerView.LayoutManager layoutManager;
-//        private DividerItemDecoration itemDecoration;
-//
-//        public RecyclerView getRecyclerView() {
-//            return recyclerView;
-//        }
-//
-//        public void setRecyclerView(RecyclerView recyclerView) {
-//            this.recyclerView = recyclerView;
-//        }
-//
-//        public BaseEasyAdapter getEasyAdapter() {
-//            return easyAdapter;
-//        }
-//
-//        public void setEasyAdapter(BaseEasyAdapter easyAdapter) {
-//            this.easyAdapter = easyAdapter;
-//        }
-//
-//        public OnRecyclerViewRefreshListener getRefreshListener() {
-//            return refreshListener;
-//        }
-//
-//        public void setRefreshListener(OnRecyclerViewRefreshListener refreshListener) {
-//            this.refreshListener = refreshListener;
-//        }
-//
-//        public RecyclerView.LayoutManager getLayoutManager() {
-//            return layoutManager;
-//        }
-//
-//        public void setLayoutManager(RecyclerView.LayoutManager layoutManager) {
-//            this.layoutManager = layoutManager;
-//        }
-//
-//        public void setItemDecoration(DividerItemDecoration itemDecoration) {
-//            this.itemDecoration = itemDecoration;
-//        }
-//
-//        private void build(){
-//
-//        }
-//    }
+    public Builder getBuilder() {
+        return builder;
+    }
+
+    public static class Builder{
+        private RecyclerView recyclerView;
+        private BaseEasyAdapter easyAdapter;
+        private OnRefreshListener refreshListener;
+        private RecyclerView.LayoutManager layoutManager;
+        private SwipeRefreshLayout refreshLayout;
+
+        public SwipeRefreshLayout getRefreshLayout() {
+            return refreshLayout;
+        }
+
+        public Builder setRefreshLayout(SwipeRefreshLayout refreshLayout) {
+            this.refreshLayout = refreshLayout;
+            return this;
+        }
+
+        public RecyclerView getRecyclerView() {
+            return recyclerView;
+        }
+
+        public Builder setRecyclerView(RecyclerView recyclerView) {
+            this.recyclerView = recyclerView;
+            return this;
+        }
+
+        public BaseEasyAdapter getEasyAdapter() {
+            return easyAdapter;
+        }
+
+        public Builder setEasyAdapter(BaseEasyAdapter easyAdapter) {
+            this.easyAdapter = easyAdapter;
+            return this;
+        }
+
+        public OnRefreshListener getRefreshListener() {
+            return refreshListener;
+        }
+
+        public Builder setRefreshListener(OnRefreshListener refreshListener) {
+            this.refreshListener = refreshListener;
+            return this;
+        }
+
+        public RecyclerView.LayoutManager getLayoutManager() {
+            return layoutManager;
+        }
+
+        public Builder setLayoutManager(RecyclerView.LayoutManager layoutManager) {
+            this.layoutManager = layoutManager;
+            return this;
+        }
+        public RecyclerViewHelper build(){
+            return new RecyclerViewHelper(this);
+        }
+    }
 
 }

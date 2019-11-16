@@ -1,6 +1,6 @@
 package com.shqiansha.adapter.listener;
 
-public interface OnRecyclerViewRefreshListener {
+public interface OnRefreshListener {
     void onPullDown();
     void onLoadMore();
 }

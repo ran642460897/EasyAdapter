@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 
-import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
+import com.shqiansha.adapter.listener.OnItemChildClickListener;
 import com.shqiansha.adapter.model.AdapterSetting;
 
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
 
     private boolean showFooter=true;
 
-    private SparseArray<OnRecyclerViewClickListener> clickListeners;
-    private OnRecyclerViewClickListener onTopReloadListener,onBottomReloadListener;
+    private SparseArray<OnItemChildClickListener> clickListeners;
+    private OnItemChildClickListener onTopReloadListener,onBottomReloadListener;
 
     private int currentState=STATE_DEFAULT;
 
@@ -281,7 +281,7 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
                     break;
         }
     }
-    public BaseEasyAdapter<E> addOnRecyclerViewClickListener(@IdRes int viewId, OnRecyclerViewClickListener listener){
+    public BaseEasyAdapter<E> addOnItemClickListener(@IdRes int viewId, OnItemChildClickListener listener){
         clickListeners.put(viewId,listener);
         return this;
     }
@@ -301,11 +301,11 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
         return listData;
     }
 
-    public void setOnTopReloadListener(OnRecyclerViewClickListener onTopReloadListener) {
+    public void setOnTopReloadListener(OnItemChildClickListener onTopReloadListener) {
         this.onTopReloadListener = onTopReloadListener;
     }
 
-    public void setOnBottomReloadListener(OnRecyclerViewClickListener onBottomReloadListener) {
+    public void setOnBottomReloadListener(OnItemChildClickListener onBottomReloadListener) {
         this.onBottomReloadListener = onBottomReloadListener;
     }
 

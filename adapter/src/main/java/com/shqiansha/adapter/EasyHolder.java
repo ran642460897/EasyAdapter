@@ -3,7 +3,8 @@ package com.shqiansha.adapter;
 import android.util.SparseArray;
 import android.view.View;
 
-import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
+import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemClickListener;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -11,7 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
     private SparseArray<View> views;
-    private SparseArray<OnRecyclerViewClickListener> clickListeners;
+    private SparseArray<OnItemChildClickListener> clickListeners;
+    private OnItemClickListener onItemClickListener;
     public EasyHolder(@NonNull View itemView) {
         super(itemView);
         this.views=new SparseArray<>();
@@ -26,13 +28,13 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         }
         return (T) view;
     }
-    protected EasyHolder addOnRecyclerViewClickListener(@IdRes int viewId,OnRecyclerViewClickListener listener){
+    protected EasyHolder addOnRecyclerViewClickListener(@IdRes int viewId, OnItemChildClickListener listener){
         View view=getView(viewId);
         view.setOnClickListener(this);
         clickListeners.put(viewId,listener);
         return this;
     }
-    protected EasyHolder addOnRecyclerViewClickListeners(SparseArray<OnRecyclerViewClickListener> listeners){
+    protected EasyHolder addOnRecyclerViewClickListeners(SparseArray<OnItemChildClickListener> listeners){
         for(int i=0;i<listeners.size();i++){
             int key=listeners.keyAt(i);
             addOnRecyclerViewClickListener(key,listeners.get(key));
@@ -40,9 +42,10 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         return this;
     }
 
+
     @Override
     public void onClick(View view) {
-        OnRecyclerViewClickListener listener=clickListeners.get(view.getId());
+        OnItemChildClickListener listener=clickListeners.get(view.getId());
         if(listener!=null) listener.onClick(view,getAdapterPosition());
     }
 }

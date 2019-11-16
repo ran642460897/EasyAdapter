@@ -14,8 +14,8 @@ import android.widget.Toast;
 import com.shqiansha.adapter.BaseEasyAdapter;
 import com.shqiansha.adapter.EasyHolder;
 import com.shqiansha.adapter.helper.RecyclerViewHelper;
-import com.shqiansha.adapter.listener.OnRecyclerViewClickListener;
-import com.shqiansha.adapter.listener.OnRecyclerViewRefreshListener;
+import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnRefreshListener;
 import com.shqiansha.easyadapter.entity.User;
 
 import java.util.ArrayList;
@@ -53,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView)holder.getView(R.id.item_test_text)).setText(adapter.getItem(position).getName());
             }
         };
-        adapter.addOnRecyclerViewClickListener(R.id.item_test_text, new OnRecyclerViewClickListener() {
+        adapter.addOnRecyclerViewClickListener(R.id.item_test_text, new OnItemChildClickListener() {
             @Override
             public void onClick(View v, int position) {
                 Toast.makeText(getApplicationContext(),adapter.getItem(position).getName(),Toast.LENGTH_LONG).show();
             }
         });
-        OnRecyclerViewRefreshListener listener=new OnRecyclerViewRefreshListener() {
+        OnRefreshListener listener=new OnRefreshListener() {
             @Override
             public void onPullDown() {
                 page=1;
@@ -71,9 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 getData();
             }
         };
-
-        new RecyclerViewHelper(recyclerView,adapter,listener).setRefreshLayout(refreshLayout).init().firstRefresh(false);
-
+        new RecyclerViewHelper.Builder().setRecyclerView(recyclerView).setEasyAdapter(adapter).setRefreshLayout(refreshLayout).build().firstRefresh(false);
     }
     private void getData(){
         new Handler().postDelayed(new Runnable() {
