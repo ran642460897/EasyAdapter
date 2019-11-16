@@ -5,22 +5,29 @@ import android.util.SparseArray;
 import android.view.View;
 
 import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemChildLongClickListener;
 import com.shqiansha.adapter.listener.OnItemClickListener;
+import com.shqiansha.adapter.listener.OnItemLongClickListener;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
     private SparseArray<View> views;
     private SparseArray<OnItemChildClickListener> clickListeners;
     private OnItemClickListener onItemClickListener;
+
+    private SparseArray<OnItemChildLongClickListener> longClickListeners;
+    private OnItemLongClickListener onItemLongClickListener;
     public EasyHolder(@NonNull View itemView) {
         super(itemView);
         this.views=new SparseArray<>();
         this.clickListeners=new SparseArray<>();
+        this.longClickListeners=new SparseArray<>();
 
         itemView.setOnClickListener(this);
+        itemView.setOnLongClickListener(this);
     }
     @SuppressWarnings("unchecked")
     public <T extends View> T getView(@IdRes int viewId) {
@@ -51,13 +58,26 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
     }
 
     @Override
-    public void onClick(View view) {
-        OnItemChildClickListener onItemChildClickListener=clickListeners.get(view.getId());
+    public void onClick(View v) {
+        OnItemChildClickListener onItemChildClickListener=clickListeners.get(v.getId());
         if(onItemChildClickListener!=null) {
-            onItemChildClickListener.onClick(view,getAdapterPosition());
+            onItemChildClickListener.onClick(v,getAdapterPosition());
         }
         else if(onItemClickListener!=null) {
-            onItemClickListener.onClick(view,getAdapterPosition());
+            onItemClickListener.onClick(v,getAdapterPosition());
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        OnItemChildLongClickListener onItemChildLongClickListener=longClickListeners.get(v.getId());
+        if(onItemChildLongClickListener!=null){
+            onItemChildLongClickListener.onLongClick(v,getAdapterPosition());
+            return true;
+        }else if(onItemLongClickListener!=null){
+            onItemLongClickListener.onLongClick(v,getAdapterPosition());
+        }
+
+        return false;
     }
 }
