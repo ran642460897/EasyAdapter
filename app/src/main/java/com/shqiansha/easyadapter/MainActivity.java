@@ -7,6 +7,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import com.shqiansha.adapter.BaseEasyAdapter;
 import com.shqiansha.adapter.EasyHolder;
 import com.shqiansha.adapter.helper.RecyclerViewHelper;
 import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemClickListener;
 import com.shqiansha.adapter.listener.OnRefreshListener;
 import com.shqiansha.easyadapter.entity.User;
 
@@ -53,12 +55,19 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView)holder.getView(R.id.item_test_text)).setText(adapter.getItem(position).getName());
             }
         };
-        adapter.addOnRecyclerViewClickListener(R.id.item_test_text, new OnItemChildClickListener() {
+        adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onClick(View v, int position) {
-                Toast.makeText(getApplicationContext(),adapter.getItem(position).getName(),Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"item",Toast.LENGTH_LONG).show();
             }
         });
+        adapter.addOnItemChildClickListener(R.id.item_test_text, new OnItemChildClickListener() {
+            @Override
+            public void onClick(View v, int position) {
+                Toast.makeText(getApplicationContext(),"child",Toast.LENGTH_LONG).show();
+            }
+        });
+
         OnRefreshListener listener=new OnRefreshListener() {
             @Override
             public void onPullDown() {
@@ -71,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 getData();
             }
         };
-        new RecyclerViewHelper.Builder().setRecyclerView(recyclerView).setEasyAdapter(adapter).setRefreshLayout(refreshLayout).build().firstRefresh(false);
+        new RecyclerViewHelper.Builder().setRecyclerView(recyclerView).setEasyAdapter(adapter).setRefreshLayout(refreshLayout).setRefreshListener(listener).build().firstRefresh(true);
     }
     private void getData(){
         new Handler().postDelayed(new Runnable() {

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 
 import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemClickListener;
 import com.shqiansha.adapter.model.AdapterSetting;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
     private boolean showFooter=true;
 
     private SparseArray<OnItemChildClickListener> clickListeners;
+    private OnItemClickListener onItemClickListener;
     private OnItemChildClickListener onTopReloadListener,onBottomReloadListener;
 
     private int currentState=STATE_DEFAULT;
@@ -234,7 +236,9 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
     @Override
     public EasyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if(viewType==ITEM_TYPE_LIST) {
-            return new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(layoutResId, parent, false)).addOnRecyclerViewClickListeners(clickListeners);
+            return new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(layoutResId, parent, false))
+                    .setOnItemClickListener(onItemClickListener)
+                    .addOnItemChildClickListeners(clickListeners);
         }else {
             switch (viewType){
                 case ITEM_TYPE_FOOT_END:
@@ -248,13 +252,13 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
                 case ITEM_TYPE_FOOT_NET_ERROR_TOP:
                     EasyHolder topErrorHolder=new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_footer_net_error_top, parent, false));
                     if(onTopReloadListener!=null) {
-                        topErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onTopReloadListener);
+                        topErrorHolder.addOnItemChildClickListener(R.id.item_footer_error_reload,onTopReloadListener);
                     }
                     return topErrorHolder;
                 case ITEM_TYPE_FOOT_NET_ERROR_BOTTOM:
                     EasyHolder bottomErrorHolder=new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_footer_net_error_bottom, parent, false));
                     if(onBottomReloadListener!=null) {
-                        bottomErrorHolder.addOnRecyclerViewClickListener(R.id.item_footer_error_reload,onBottomReloadListener);
+                        bottomErrorHolder.addOnItemChildClickListener(R.id.item_footer_error_reload,onBottomReloadListener);
                     }
                     return bottomErrorHolder;
                 default:
@@ -281,9 +285,13 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
                     break;
         }
     }
-    public BaseEasyAdapter<E> addOnItemClickListener(@IdRes int viewId, OnItemChildClickListener listener){
+    public BaseEasyAdapter<E> addOnItemChildClickListener(@IdRes int viewId, OnItemChildClickListener listener){
         clickListeners.put(viewId,listener);
         return this;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
     }
 
     /**

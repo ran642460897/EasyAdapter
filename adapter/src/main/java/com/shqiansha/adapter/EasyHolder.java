@@ -1,5 +1,6 @@
 package com.shqiansha.adapter;
 
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -18,6 +19,8 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         super(itemView);
         this.views=new SparseArray<>();
         this.clickListeners=new SparseArray<>();
+
+        itemView.setOnClickListener(this);
     }
     @SuppressWarnings("unchecked")
     public <T extends View> T getView(@IdRes int viewId) {
@@ -28,24 +31,33 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         }
         return (T) view;
     }
-    protected EasyHolder addOnRecyclerViewClickListener(@IdRes int viewId, OnItemChildClickListener listener){
+    protected EasyHolder addOnItemChildClickListener(@IdRes int viewId, OnItemChildClickListener listener){
         View view=getView(viewId);
         view.setOnClickListener(this);
         clickListeners.put(viewId,listener);
         return this;
     }
-    protected EasyHolder addOnRecyclerViewClickListeners(SparseArray<OnItemChildClickListener> listeners){
+    protected EasyHolder addOnItemChildClickListeners(SparseArray<OnItemChildClickListener> listeners){
         for(int i=0;i<listeners.size();i++){
             int key=listeners.keyAt(i);
-            addOnRecyclerViewClickListener(key,listeners.get(key));
+            addOnItemChildClickListener(key,listeners.get(key));
         }
         return this;
     }
 
+    protected EasyHolder setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+        return this;
+    }
 
     @Override
     public void onClick(View view) {
-        OnItemChildClickListener listener=clickListeners.get(view.getId());
-        if(listener!=null) listener.onClick(view,getAdapterPosition());
+        OnItemChildClickListener onItemChildClickListener=clickListeners.get(view.getId());
+        if(onItemChildClickListener!=null) {
+            onItemChildClickListener.onClick(view,getAdapterPosition());
+        }
+        else if(onItemClickListener!=null) {
+            onItemClickListener.onClick(view,getAdapterPosition());
+        }
     }
 }

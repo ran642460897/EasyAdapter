@@ -51,7 +51,10 @@ public class RecyclerViewHelper {
         }
 
         //设置refreshLayout监听
-        if(builder.refreshLayout!=null) builder.refreshLayout.setOnRefreshListener(()->builder.refreshListener.onPullDown());
+        if(builder.refreshLayout!=null) {
+            builder.refreshLayout.setOnRefreshListener(()->builder.refreshListener.onPullDown());
+            builder.easyAdapter.setRefreshLayout(builder.refreshLayout);
+        }
 
     }
 
