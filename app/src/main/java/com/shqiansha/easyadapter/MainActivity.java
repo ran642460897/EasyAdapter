@@ -16,7 +16,9 @@ import com.shqiansha.adapter.BaseEasyAdapter;
 import com.shqiansha.adapter.EasyHolder;
 import com.shqiansha.adapter.helper.RecyclerViewHelper;
 import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemChildLongClickListener;
 import com.shqiansha.adapter.listener.OnItemClickListener;
+import com.shqiansha.adapter.listener.OnItemLongClickListener;
 import com.shqiansha.adapter.listener.OnRefreshListener;
 import com.shqiansha.easyadapter.entity.User;
 
@@ -67,6 +69,19 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),"child",Toast.LENGTH_LONG).show();
             }
         });
+        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public void onLongClick(View v, int position) {
+                Toast.makeText(getApplicationContext(),"item long",Toast.LENGTH_LONG).show();
+            }
+        });
+        adapter.addOnItemChildLongClickListener(R.id.item_test_text, new OnItemChildLongClickListener() {
+            @Override
+            public void onLongClick(View v, int position) {
+                Toast.makeText(getApplicationContext(),"child long",Toast.LENGTH_LONG).show();
+            }
+        });
+
 
         OnRefreshListener listener=new OnRefreshListener() {
             @Override

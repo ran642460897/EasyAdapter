@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 
 
 import com.shqiansha.adapter.listener.OnItemChildClickListener;
+import com.shqiansha.adapter.listener.OnItemChildLongClickListener;
 import com.shqiansha.adapter.listener.OnItemClickListener;
+import com.shqiansha.adapter.listener.OnItemLongClickListener;
 import com.shqiansha.adapter.model.AdapterSetting;
 
 import java.util.ArrayList;
@@ -31,7 +33,9 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
     private boolean showFooter=true;
 
     private SparseArray<OnItemChildClickListener> clickListeners;
+    private SparseArray<OnItemChildLongClickListener> longClickListeners;
     private OnItemClickListener onItemClickListener;
+    private OnItemLongClickListener onItemLongClickListener;
     private OnItemChildClickListener onTopReloadListener,onBottomReloadListener;
 
     private int currentState=STATE_DEFAULT;
@@ -64,11 +68,13 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
 
 
 
+
     public BaseEasyAdapter(Context context,int layoutResId,AdapterSetting setting){
         this.context=context;
         this.layoutResId=layoutResId;
         this.setting=setting;
         clickListeners=new SparseArray<>();
+        longClickListeners=new SparseArray<>();
     }
     public BaseEasyAdapter(Context context,int layoutResId){
         this(context,layoutResId,new AdapterSetting());
@@ -238,7 +244,9 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
         if(viewType==ITEM_TYPE_LIST) {
             return new EasyHolder(LayoutInflater.from(parent.getContext()).inflate(layoutResId, parent, false))
                     .setOnItemClickListener(onItemClickListener)
-                    .addOnItemChildClickListeners(clickListeners);
+                    .addOnItemChildClickListeners(clickListeners)
+                    .setOnItemLongClickListener(onItemLongClickListener)
+                    .addOnItemChildLongClickListeners(longClickListeners);
         }else {
             switch (viewType){
                 case ITEM_TYPE_FOOT_END:
@@ -289,9 +297,17 @@ public abstract class BaseEasyAdapter<E> extends RecyclerView.Adapter<EasyHolder
         clickListeners.put(viewId,listener);
         return this;
     }
+    public BaseEasyAdapter<E> addOnItemChildLongClickListener(@IdRes int viewId, OnItemChildLongClickListener listener){
+        longClickListeners.put(viewId,listener);
+        return this;
+    }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener onItemLongClickListener) {
+        this.onItemLongClickListener = onItemLongClickListener;
     }
 
     /**

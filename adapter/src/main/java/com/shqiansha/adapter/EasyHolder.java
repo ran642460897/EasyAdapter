@@ -38,6 +38,8 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         }
         return (T) view;
     }
+
+
     protected EasyHolder addOnItemChildClickListener(@IdRes int viewId, OnItemChildClickListener listener){
         View view=getView(viewId);
         view.setOnClickListener(this);
@@ -52,8 +54,27 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
         return this;
     }
 
+    protected EasyHolder addOnItemChildLongClickListener(@IdRes int viewId, OnItemChildLongClickListener listener){
+        View view=getView(viewId);
+        view.setOnLongClickListener(this);
+        longClickListeners.put(viewId,listener);
+        return this;
+    }
+    protected EasyHolder addOnItemChildLongClickListeners(SparseArray<OnItemChildLongClickListener> listeners){
+        for(int i=0;i<listeners.size();i++){
+            int key=listeners.keyAt(i);
+            addOnItemChildLongClickListener(key,listeners.get(key));
+        }
+        return this;
+    }
+
     protected EasyHolder setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
+        return this;
+    }
+
+    public EasyHolder setOnItemLongClickListener(OnItemLongClickListener onItemLongClickListener) {
+        this.onItemLongClickListener = onItemLongClickListener;
         return this;
     }
 
@@ -76,6 +97,7 @@ public class EasyHolder extends RecyclerView.ViewHolder implements View.OnClickL
             return true;
         }else if(onItemLongClickListener!=null){
             onItemLongClickListener.onLongClick(v,getAdapterPosition());
+            return true;
         }
 
         return false;
